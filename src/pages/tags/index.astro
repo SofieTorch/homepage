@@ -2,13 +2,15 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// Get all unique tags from blog posts
+// Get all unique tags from blog posts and talks
 const allPosts = await getCollection('blog');
-const tags = [...new Set(allPosts.flatMap(post => post.data.tags || []))].sort();
+const allTalks = await getCollection('talks');
+const allContent = [...allPosts, ...allTalks];
+const tags = [...new Set(allContent.flatMap(item => item.data.tags || []))].sort();
 
-// Count posts for each tag and create tag objects with additional data
+// Count content for each tag and create tag objects with additional data
 const tagObjects = tags.map(tag => {
-  const count = allPosts.filter(post => post.data.tags?.includes(tag)).length;
+  const count = allContent.filter(item => item.data.tags?.includes(tag)).length;
   // Generate a consistent but random-looking hue for each tag
   const hue = Math.abs(tag.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360);
   return { 
