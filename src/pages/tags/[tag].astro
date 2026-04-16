@@ -8,10 +8,10 @@ export const prerender = true;
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('blog');
-  const allTalks = await getCollection('talks');
+  const allEvents = await getCollection('events');
 
   // Get all unique tags from both collections
-  const allContent = [...allPosts, ...allTalks];
+  const allContent = [...allPosts, ...allEvents];
   const uniqueTags = [...new Set(allContent.flatMap(item => item.data.tags || []))];
 
   // Create a path for each tag
@@ -19,36 +19,36 @@ export async function getStaticPaths() {
     const filteredPosts = allPosts.filter(post =>
       post.data.tags?.some(t => t.toLowerCase() === (tag as string).toLowerCase())
     );
-    const filteredTalks = allTalks.filter(talk =>
-      talk.data.tags?.some(t => t.toLowerCase() === (tag as string).toLowerCase())
+    const filteredEvents = allEvents.filter(event =>
+      event.data.tags?.some(t => t.toLowerCase() === (tag as string).toLowerCase())
     );
     return {
       params: { tag },
-      props: { posts: filteredPosts, talks: filteredTalks },
+      props: { posts: filteredPosts, events: filteredEvents },
     };
   });
 }
 
 const { tag } = Astro.params as { tag: string };
-const { posts = [], talks = [] } = Astro.props;
+const { posts = [], events = [] } = Astro.props;
 
 // Sort posts by date
 const sortedPosts = posts && posts.length > 0
   ? [...posts].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   : [];
 
-// Sort talks by date
-const sortedTalks = talks && talks.length > 0
-  ? [...talks].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+// Sort events by date
+const sortedEvents = events && events.length > 0
+  ? [...events].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   : [];
 
-const totalCount = sortedPosts.length + sortedTalks.length;
+const totalCount = sortedPosts.length + sortedEvents.length;
 
 // Generate a consistent but random-looking hue for the tag
 const tagHue = Math.abs(tag.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360);
 
 // Generate related tags (tags that appear together with the current tag)
-const allTaggedContent = [...sortedPosts, ...sortedTalks];
+const allTaggedContent = [...sortedPosts, ...sortedEvents];
 const relatedTags = [...new Set(
   allTaggedContent.flatMap(item => item.data.tags || [])
     .filter(t => t !== tag)
@@ -214,46 +214,50 @@ const relatedTags = [...new Set(
       </div>
     </div>
     
-    <!-- Talks section -->
-    {sortedTalks.length > 0 && (
+    <!-- Events section -->
+    {sortedEvents.length > 0 && (
       <div class="mt-12 sm:mt-16">
         <h2 class="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6 sm:mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-3 sm:pb-4">
-          Talks
+          Events
         </h2>
         <div class="space-y-4">
-          {sortedTalks.map((talk) => {
-            const hasBody = talk.body && talk.body.trim().length > 0;
+          {sortedEvents.map((event) => {
+            const hasBody = event.body && event.body.trim().length > 0;
             return (
               <article class="group relative p-5 sm:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all duration-300">
                 <div class="flex flex-col gap-2">
                   <div class="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    <span class="font-medium uppercase tracking-wider">{talk.data.event}</span>
-                    <span class="h-px w-4 bg-zinc-300 dark:bg-zinc-700"></span>
-                    <time datetime={talk.data.date.toISOString()}>
-                      <FormattedDate date={talk.data.date} format="long" />
+                    {event.data.event && (
+                      <>
+                        <span class="font-medium uppercase tracking-wider">{event.data.event}</span>
+                        <span class="h-px w-4 bg-zinc-300 dark:bg-zinc-700"></span>
+                      </>
+                    )}
+                    <time datetime={event.data.date.toISOString()}>
+                      <FormattedDate date={event.data.date} format="long" />
                     </time>
                   </div>
                   <h3 class="text-lg sm:text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                    {talk.data.title}
+                    {event.data.title}
                   </h3>
-                  {talk.data.description && (
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{talk.data.description}</p>
+                  {event.data.description && (
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">{event.data.description}</p>
                   )}
                   <div class="flex items-center flex-wrap gap-3 pt-1">
-                    {talk.data.video && (
-                      <a href={talk.data.video} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                    {event.data.video && (
+                      <a href={event.data.video} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
                         Watch
                       </a>
                     )}
-                    {talk.data.slides && (
-                      <a href={talk.data.slides} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                    {event.data.slides && (
+                      <a href={event.data.slides} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5" /></svg>
                         Slides
                       </a>
                     )}
                     {hasBody && (
-                      <a href={`/talks/${talk.slug}`} class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                      <a href={`/events/${event.slug}`} class="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
                         Details
                       </a>

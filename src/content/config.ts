@@ -14,22 +14,24 @@ const blogCollection = defineCollection({
   }),
 });
 
-const talksCollection = defineCollection({
+const eventsCollection = defineCollection({
   type: 'content',
   schema: z.object({
     title: z.string(),
-    event: z.string(),
+    type: z.enum(['talk', 'organizer', 'hackathon', 'competition']),
+    event: z.string().optional(),
     date: z.date(),
     description: z.string().optional(),
     tags: z.array(z.string()).optional(),
     video: z.string().optional(),
     slides: z.string().optional(),
     featured: z.boolean().optional(),
+    images: z.array(z.string()).optional(),
   }),
 });
 
 export const collections = {
   'blog': blogCollection,
-  'talks': talksCollection,
+  'events': eventsCollection,
 };
 

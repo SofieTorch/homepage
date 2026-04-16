@@ -2,10 +2,10 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// Get all unique tags from blog posts and talks
+// Get all unique tags from blog posts and events
 const allPosts = await getCollection('blog');
-const allTalks = await getCollection('talks');
-const allContent = [...allPosts, ...allTalks];
+const allEvents = await getCollection('events');
+const allContent = [...allPosts, ...allEvents];
 const tags = [...new Set(allContent.flatMap(item => item.data.tags || []))].sort();
 
 // Count content for each tag and create tag objects with additional data
